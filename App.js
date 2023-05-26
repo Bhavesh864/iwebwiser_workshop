@@ -1,21 +1,22 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { connect } from 'react-redux';
-// import {spinner} from './src/components/'
-import { StatusBar } from 'react-native';
-import { Navigator } from './src/route'
+import { StatusBar, View } from 'react-native';
+import { MainRoute } from './src/route'
+import { Loader } from './src/utility/Loader';
 
 
 function App({ appStatus, loading }) {
+  console.log(appStatus);
   return (
-    <NavigationContainer >
-      <Navigator appStatus={appStatus} />
+    <View style={{ flex: 1 }}>
+      <MainRoute appStatus={appStatus} />
       <StatusBar
         animated={true}
         backgroundColor="black"
       />
-      {/* {loading && <Spinner />} */}
-    </NavigationContainer>
+      {loading && <Loader />}
+    </View>
   );
 }
 
@@ -25,6 +26,5 @@ const mapStateToProps = (state) => {
     loading: state.app.loading,
   }
 }
-
 
 export default connect(mapStateToProps, {})(App);
