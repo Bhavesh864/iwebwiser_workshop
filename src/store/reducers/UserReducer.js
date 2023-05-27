@@ -3,7 +3,6 @@ import { SET_PATIENT_DETAILS, SET_USER_DATA } from '../types';
 
 const initialState = {
   user: null,
-  patient: null,
 };
 
 const UserReducer = (state = initialState, action) => {

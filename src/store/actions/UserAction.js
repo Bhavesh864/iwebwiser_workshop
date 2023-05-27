@@ -1,51 +1,75 @@
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import { Store } from 'redux';
-
-import { AppConstant, englishLanguageKey } from '../../constants/AppConstant';
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { AppConstant } from '../../constants/AppConstant';
 import { AppToastMessage } from '../../constants/SnakeBar';
 import {
-  ADDLABTESTURL,
-  ADDRADIOLOGYTESTURL,
-  AddmedicationUrl,
   DoctorDetailUrl,
-  GetCurrentMedicationUrl,
-  GetSinglePatient,
-  GetVirtualLinkURL,
   LOGOUTURL,
-  PatientDetailUrl,
-  editProfileUrl,
-  logOutUrl,
+  getCategoriesUrl,
+  getQuestinariesUrl,
+  getUserDetailsUrl,
   loginUrl,
-  otpVerifyUrl,
-  registerUrl,
-  userDetailsUrl,
+  logoutUrl,
+  signupUrl,
+  startExamUrl,
+  submitResultsUrl,
 } from '../../services/baseUrls';
 import {
   apiHeader,
   GetRequest,
   PostRequest,
   AuthorizeApiHeader,
-  FormDataApiHeader,
-  FormDataAuthApiHeader,
 } from '../../services/request';
-import { CHANGE_APP_STATUS, SET_PATIENT_DETAILS, SET_USER_DATA } from '../types';
-import { AppStatusType, ChangeAppLanguage, setAppLoader, setAppStatus, setDashboardNavigation } from './AppAction';
+import { SET_USER_DATA } from '../types';
+import { AppStatusType, setAppLoader, setAppStatus } from './AppAction';
 import { store } from '..';
 
-// --------------------- User Login ---------------------
+
+
+
+
+// --------------------- AsyncSignin ---------------------
+export const AsyncSignin = () => {
+  return async dispatch => {
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      console.log('local token--> ', token);
+
+      if (!token) {
+        AppConstant.setAccessToken(null);
+        dispatch(setAppStatus(AppStatusType.auth));
+      } else {
+        AppConstant.setAccessToken(JSON.parse(token));
+        AppConstant.accessToken = JSON.parse(token);
+        UserDetailsAction().then(res => {
+          console.log(res);
+          dispatch(setAppStatus(AppStatusType.dashboard));
+        }).catch(err => {
+          console.log('userDetailsErr', err);
+        })
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+}
+
+// --------------------- Auth ---------------------
+
 export const LoginAction = async (data) => {
+  console.log(data);
   try {
     const res = await PostRequest({
       url: `${loginUrl}`,
-      header: { ...apiHeader },
+      headers: { ...apiHeader },
       body: data,
     });
     if (res && res.status) {
-      let token = res?.data?.accessToken;
+      let token = res?.user?.token;
+      let id = res?.user?.id;
       AppConstant.setAccessToken(token);
       AppConstant.accessToken = token;
+      AppConstant.setUserId(id);
+      AppConstant.userId = id;
       console.log('token======>', token);
       await AsyncStorage.setItem('access_token', JSON.stringify(token));
     }
@@ -59,9 +83,115 @@ export const LoginAction = async (data) => {
 
 // --------------------- User Details ---------------------
 export const UserDetailsAction = async () => {
+  console.log('token arra h', AppConstant.accessToken);
   try {
     const res = await GetRequest({
-      url: `${DoctorDetailUrl}`,
+      url: `${getUserDetailsUrl}`,
+      header: {
+        ...apiHeader,
+        Authorization: `Bearer ${AppConstant.accessToken}`,
+      },
+    });
+    if (res && res.status) {
+      let token = res?.user?.token;
+      let id = res?.user?.id;
+      AppConstant.setAccessToken(token);
+      AppConstant.accessToken = token;
+      AppConstant.setUserId(id);
+      AppConstant.userId = id;
+      console.log('token======>', token);
+      store.dispatch(setUserDetails(res));
+      await AsyncStorage.setItem('access_token', JSON.stringify(token));
+    }
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const SignUpAction = async (data) => {
+  console.log(data);
+  try {
+    const res = await PostRequest({
+      url: `${signupUrl}`,
+      headers: { ...apiHeader },
+      body: data,
+    });
+    console.log('login======>', res);
+    return res;
+  } catch (error) {
+    console.log('login error---->', error);
+  }
+};
+
+
+export const LogOutAction = async () => {
+  try {
+    const res = await GetRequest({
+      url: `${logoutUrl}`,
+    });
+    console.log('logout res===> ', res);
+    if (res?.status) {
+      AppConstant.setAccessToken(null);
+      store.dispatch(setAppStatus(AppStatusType.auth));
+      store.dispatch(setUserDetails(null));
+      AppToastMessage('Log out Successfully');
+      await AsyncStorage.removeItem('access_token');
+      AppConstant.setAccessToken(null);
+      AppConstant.accessToken = null;
+    }
+    return res;
+  } catch (error) {
+    console.log('werr', error);
+  }
+};
+
+
+// --------------------- App Flowise ---------------------
+
+export const GetLanguageCategories = async () => {
+  try {
+    const res = await GetRequest({
+      url: `${getCategoriesUrl}`,
+      header: {
+        ...AuthorizeApiHeader,
+        Authorization: `Bearer ${AppConstant.accessToken}`,
+      },
+    });
+
+    if (res?.status) {
+      console.log('result', res);
+    }
+    return res;
+
+  } catch (error) {
+    console.log('catch-->', error);
+  }
+};
+
+
+export const startExamWithSelectedLang = async (data) => {
+  try {
+    const res = await PostRequest({
+      url: `${startExamUrl}`,
+      headers: { ...apiHeader },
+      body: data,
+    });
+    if (res && res.status) {
+      return res;
+    }
+    console.log('login======>', res);
+
+  } catch (error) {
+    console.log('login error---->', error);
+  }
+};
+
+
+export const getQuestinaries = async (selectedLangId) => {
+  try {
+    const res = await GetRequest({
+      url: `${getQuestinariesUrl}/${selectedLangId}`,
       header: {
         ...AuthorizeApiHeader,
         Authorization: `Bearer ${AppConstant.accessToken}`,
@@ -74,60 +204,26 @@ export const UserDetailsAction = async () => {
 };
 
 
-// ------------------ Fetching User Details -----------------
-export const GetUserDetails = () => {
-  return async dispatch => {
-    try {
-      dispatch(setAppLoader(true))
-      UserDetailsAction().then(res => {
-        if (res?.status) {
-          dispatch(setUserDetails(res));
-        } else {
-          console.log('details-> ', res?.message);
-        }
-        dispatch(setAppLoader(false))
-      });
-    } catch (error) {
-      console.log('catch-->', error);
+export const submitResultsAction = async (data) => {
+  try {
+    const res = await PostRequest({
+      url: `${submitResultsUrl}`,
+      headers: { ...apiHeader },
+      body: {
+        answer: JSON.stringify(data)
+      },
+    });
+
+    if (res && res.status) {
+      return res;
     }
-  };
-};
+    console.log('login======>', res);
 
-
-
-// --------------------- AsyncToken  ---------------------
-export const AsyncToken = async token => {
-  console.log('aysnc token===============', token);
-  await AsyncStorage.setItem('token', JSON.stringify(token));
-};
-
-
-
-export const AsyncSignin = () => {
-  return async dispatch => {
-    try {
-      const token = await AsyncStorage.getItem('access_token');
-      const appLanguage = await AsyncStorage.getItem("language");
-      console.log('local token--> ', token);
-      AppConstant.showConsoleLog("saved app language", appLanguage);
-      if (appLanguage) {
-        AppConstant.setActiveLanguage(appLanguage);
-        dispatch(ChangeAppLanguage(appLanguage));
-      } else {
-        AppConstant.setActiveLanguage(englishLanguageKey);
-      }
-      if (!token) {
-        AppConstant.setAccessToken(null);
-        dispatch(setAppStatus(AppStatusType.auth));
-      } else {
-        AppConstant.setAccessToken(JSON.parse(token));
-        dispatch(setAppStatus(AppStatusType.dashboard));
-      }
-    } catch (error) {
-      console.log(error);
-    }
+  } catch (error) {
+    console.log('login error---->', error);
   }
-}
+};
+
 
 export const setUserDetails = data => {
   try {
@@ -139,43 +235,6 @@ export const setUserDetails = data => {
     console.log(error);
   }
 };
-
-
-
-export const sliderHandle = () => {
-  return async dispatch => {
-    await AsyncStorage.setItem('slider', JSON.stringify('true'));
-    dispatch(setAppStatus(AppStatusType.auth));
-  };
-};
-// ///////////////////////////////////////////////////////////////////////////////////////////
-
-// --------------------------Logoutfunction--------------------------------------------->
-
-export const LogOutAction = () => {
-  return async dispatch => {
-    try {
-      dispatch(setAppLoader(true))
-      const res = await GetRequest({
-        url: `${LOGOUTURL}`,
-      });
-      console.log('logout res===> ', res);
-      if (res?.status) {
-        AppConstant.setAccessToken(null);
-        dispatch(setAppStatus(AppStatusType.auth));
-        dispatch(setPatientDetail(null));
-        AppToastMessage('Log out Successfully');
-        await AsyncStorage.removeItem('access_token');
-      }
-      dispatch(setAppLoader(false))
-      return res;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-};
-
-// ///////////////////////////////////////////////////////////////////////////////
 
 
 // number of customer in waiting in marhsal

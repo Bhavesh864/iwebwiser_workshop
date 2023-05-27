@@ -5,10 +5,6 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  SafeAreaView,
-  SpacerHorizontal
 } from 'react-native';
 import {
   Center,
@@ -17,9 +13,6 @@ import {
   fonts,
   fontSize,
   normalTextStyle,
-  flexBackground,
-  smallTextSize,
-  keyboardVerticalOffset,
   mediumTextStyle,
   flexCenter,
   rowCenter,
@@ -33,12 +26,27 @@ import { BackIconSvg, BlackBackIcon, CrossSvgComponent, TickSvg } from '../../as
 import { CustomTouchableOpacity } from '../../utility/CustomView';
 import { width } from '../../styles/ResponsiveLayout';
 import { AppConstant, englishLanguageKey } from '../../constants/AppConstant';
-import { useSelector } from 'react-redux';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import { useEffect } from 'react';
+
+
+
+export const getCounterValues = (countDown) => {
+  // calculate time left
+  const days = Math.floor(countDown / (1000 * 60 * 60 * 24));
+  const hours = Math.floor(
+    (countDown % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+  );
+  const minutes = Math.floor((countDown % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((countDown % (1000 * 60)) / 1000);
+
+  return [days, hours, minutes, seconds];
+};
 
 
 export const InputField = ({
+  onSubmitEditing = () => { },
   onPress = () => { },
+  onIconPress = () => { },
   placeholder = 'Password',
   autoCapital = 'none',
   value,
@@ -53,7 +61,7 @@ export const InputField = ({
   activeBorderColor,
   textStyle = {},
   keyboardType = 'default',
-  maxLength = 30,
+  maxLength = 100,
   leftIcon,
   label,
   editable = true,
@@ -69,7 +77,7 @@ export const InputField = ({
         border: 1,
         borderColor: activeBorderColor
           ? activeBorderColor
-          : colors.borderColor,
+          : null,
       }
       : {};
   return (
@@ -88,24 +96,27 @@ export const InputField = ({
       <TouchableOpacity
         onPress={onPress}
         activeOpacity={1}
-        style={[
+        style={[,
           styles.InputView,
+          { marginVertical: editable ? 10 : 6 },
           inputPasswordWidth,
           { flexDirection: 'row-reverse' },
           { borderWidth: 1, borderColor: colors.borderColor },
-          isDescription ? { maxHeight: 140, height: 140 } : { alignItems: 'center' },
+          isDescription ? { alignItems: 'flex-start', } : { alignItems: 'center' },
           error ? { borderColor: colors.red, borderWidth: 0.8 } : null,
           style,
         ]}>
-        {showIcon && <View style={{}}>{showIcon}
-        </View>}
+        {showIcon && <TouchableOpacity onPress={onIconPress} style={{ alignSelf: 'center', marginRight: 10 }}>{showIcon}
+        </TouchableOpacity>}
 
         <TextInput
+          onSubmitEditing={onSubmitEditing}
+          // numberOfLines={5}
           value={value}
           onChangeText={text => onTextChange(text)}
           placeholder={placeholder}
           placeholderTextColor={colors.grey}
-          maxLength={maxLength}
+          maxLength={100}
           keyboardType={keyboardType}
           editable={editable}
           autoCapitalize={autoCapital}
@@ -124,11 +135,14 @@ export const InputField = ({
             {
               flex: 1,
               ...mediumTextStyle,
-              fontSize: 18,
+              fontSize: editable ? 18 : 16,
               color: colors.black,
               paddingLeft: showIcon && showIcon ? 10 : 10,
-              textAlign: AppConstant.activeLanguage == englishLanguageKey ? "left" : "right",
-              textAlignVertical: isDescription ? 'top' : 'center',
+              // backgroundColor: 'red',
+              // flexWrap: 'wrap',
+              textAlign: "left",
+              // overflow: "scroll",
+              textAlignVertical: isDescription ? 'center' : 'center',
               ...textStyle,
             },
           ]}
@@ -383,17 +397,45 @@ export const RadioButton = ({ backgroundColor, color = colors.blue, onpress = ()
   )
 }
 
+
+export const useCountdown = (targetDate) => {
+  const countDownDate = new Date(targetDate).getTime();
+
+  const [countDown, setCountDown] = useState(
+    countDownDate - new Date().getTime()
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountDown(countDownDate - new Date().getTime());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [countDownDate]);
+
+  return getReturnValues(countDown);
+};
+
+const getReturnValues = (countDown) => {
+  // calculate time left
+  const days = Math.floor(countDown / (1000 * 60 * 60 * 24));
+  const hours = Math.floor(
+    (countDown % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+  );
+  const minutes = Math.floor((countDown % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((countDown % (1000 * 60)) / 1000);
+
+  return [days, hours, minutes, seconds];
+};
+
+
 const styles = StyleSheet.create({
   InputView: {
-    borderWidth: 0,
     borderRadius: 10,
-    marginVertical: 10,
-    marginBottom: 15,
-    paddingHorizontal: 10,
+    paddingHorizontal: 0,
     marginHorizontal: 0,
-    alignItems: 'flex-start',
+    alignItems: 'center',
     alignSelf: 'center',
-    height: 50,
     backgroundColor: '#F5F5F5',
   },
   button: {

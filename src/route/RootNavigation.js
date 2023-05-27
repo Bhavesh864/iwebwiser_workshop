@@ -2,7 +2,7 @@
 // https://reactnavigation.org/docs/navigating-without-navigation-prop/
 
 import * as React from 'react';
-import {StackActions} from '@react-navigation/native';
+import { StackActions } from '@react-navigation/native';
 
 export const navigationRef = React.createRef();
 
@@ -16,6 +16,10 @@ export function popToTop(...args) {
 }
 export function pop(...args) {
   navigationRef.current?.dispatch(StackActions.pop(...args));
+  // navigationRef.current?.dispatch(StackActions.push(...args));
+}
+export function replace(...args) {
+  navigationRef.current?.dispatch(StackActions.replace(...args));
   // navigationRef.current?.dispatch(StackActions.push(...args));
 }
 export function navigate(...args) {

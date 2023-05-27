@@ -3,13 +3,14 @@ import React, { useEffect } from 'react';
 import { Center, height, width } from '../styles/CommonStyling'
 import { setAppStatus } from '../store/actions/AppAction';
 import { useDispatch } from 'react-redux';
+import { AsyncSignin } from '../store/actions/UserAction';
 
 const SplashScreen = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
     setTimeout(() => {
-      dispatch(setAppStatus(1));
+      dispatch(AsyncSignin());
     }, 2000);
   }, []);
 

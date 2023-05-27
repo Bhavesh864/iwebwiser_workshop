@@ -1,23 +1,25 @@
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { Keyboard, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
 import React, { useState } from 'react'
-import { Center, flexBackground, flexRow } from '../../styles/CommonStyling'
-import { colors } from '../../styles/colors'
-import { LoginSvg } from '../../assets/svg/AppSvg'
+import { flexRow } from '../../styles/CommonStyling'
+import { CancelEyeSvgComponent, EyeSvgComponent, LoginSvg } from '../../assets/svg/AppSvg'
 import { AppText } from '../../utility/TextUtility'
 import { InputField, TouchableTextView } from '../../components/Custom/CustomFields'
-import { CustomTouchableOpacity } from '../../utility/CustomView'
 import { SpacerVertical } from '../../utility/Spacer'
 import { navigate } from '../../route/RootNavigation'
 import { useDispatch } from 'react-redux'
 import { setAppStatus } from '../../store/actions/AppAction'
+import { LoginAction, setUserDetails } from '../../store/actions/UserAction'
+import { AppToastMessage } from '../../constants/SnakeBar'
 
 const LoginScreen = () => {
     const dispatch = useDispatch();
     const [email, setemail] = useState('');
     const [password, setpassword] = useState('');
-    const [error, seterror] = useState(null);
+    const [passwordShow, setpasswordShow] = useState(false);
+    const [error, seterror] = useState(false);
 
     const onLoginPress = () => {
+        Keyboard.dismiss();
         if (!email || !email.endsWith('.com') || !email.includes('@')) {
             seterror('email');
             return;
@@ -26,7 +28,25 @@ const LoginScreen = () => {
             seterror('password');
             return;
         }
-        dispatch(setAppStatus(2));
+
+        const data = {
+            email: email,
+            password: password,
+            type: 'student',
+        }
+
+        LoginAction(data).then(res => {
+            if (res?.status) {
+                dispatch(setAppStatus(2));
+                dispatch(setUserDetails(res));
+            } else {
+                console.log(res?.error ? res?.error : res?.message);
+                AppToastMessage(res?.error ? res?.error : res?.message ? res?.message : 'Something went wrong!')
+            }
+        }).catch(err => {
+            console.log('err', err);
+        })
+
     }
 
     return (
@@ -50,9 +70,13 @@ const LoginScreen = () => {
                         value={email}
                     />
                     <InputField
+                        onIconPress={() => {
+                            setpasswordShow(!passwordShow);
+                        }}
+                        showIcon={!passwordShow ? <EyeSvgComponent /> : <CancelEyeSvgComponent />}
                         error={error == 'password' ? 'Please enter a valid password!' : null}
                         placeholder='Password'
-                        secureTextEntry={true}
+                        secureTextEntry={!passwordShow}
                         onTextChange={(text) => {
                             if (error == 'password') {
                                 seterror(null)

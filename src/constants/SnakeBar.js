@@ -77,7 +77,7 @@ class ShowMessage extends React.Component {
       <Animated.View
         style={{
           ...styles.errView,
-          transform: [{ translateY: translateY }],
+          transform: [{ translateX: translateY }],
           opacity: this.animHeight,
         }}>
         <View style={styles.sideLine} />
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     paddingVertical: 2,
-    backgroundColor: colors.white,
+    backgroundColor: colors.secondary,
     // backgroundColor: '#E4E4E4',
     borderRadius: 8,
     maxHeight: 120,

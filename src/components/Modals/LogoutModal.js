@@ -50,7 +50,7 @@ const LogoutModal = ({ close, submit }) => {
           <View style={{ marginBottom: 10 }}>
             <Image
               style={styles.appImage}
-              source={require('../../assets/images/Group13.png')}
+              source={require('../../assets/images/logo.png')}
             />
             <AppText
               fontFamily={fonts.semiBold}

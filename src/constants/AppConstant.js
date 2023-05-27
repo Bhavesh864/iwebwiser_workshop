@@ -7,7 +7,7 @@ export const englishLanguageKey = "EN";
 export const arabicLanguageKey = "AR"
 
 export class AppConstant {
-  static userToken = null;
+  static userId = null;
   static fcm_token = null;
   static isNetworkConnected = true;
 
@@ -25,30 +25,16 @@ export class AppConstant {
     this.deviceToken = deviceToken;
   }
 
-  static AppointmentId = null;
-  static getAppointmentId() {
-    return this.AppointmentId;
-  }
-
-  static setAppointmentId(appointmentId) {
-    this.AppointmentId = appointmentId;
-  }
-
-  static activeLanguage = englishLanguageKey;
-  static getActiveLanguage() {
-    return this.activeLanguage;
-  }
-  static setActiveLanguage(activeLanguage) {
-    this.activeLanguage = activeLanguage;
-  }
-
   static accessToken = null;
   static setAccessToken(accessToken) {
     this.accessToken = accessToken;
   }
 
-  static setUserToken(token) {
-    this.userToken = token;
+  static setUserId(id) {
+    this.userId = id;
+  }
+  static getUserId() {
+    return this.userId;
   }
 
   static statusHeight = {
@@ -63,9 +49,6 @@ export class AppConstant {
     this.statusHeight = statusHeight;
   }
 
-  static getUserToken() {
-    return this.userToken;
-  }
 
   static showConsoleLog(message, ...optionalParams) {
     console.log(message, ...optionalParams);
@@ -145,3 +128,40 @@ export const CompletedByFMD = 'completedByFMD';
 export const Confirmed = 'confirmed';
 export const Virtualvisit = 'virtual';
 export const Hospitalvisit = 'visit';
+
+
+export const questionsArr = [
+  {
+    key: 1,
+    title: 'Javascript'
+  },
+  {
+    key: 2,
+    title: 'CSS'
+  },
+  {
+    key: 3,
+    title: 'HTML'
+  },
+];
+
+
+export const answersArr = [
+  {
+    key: 1,
+    title: `A.  echo "Hello World!"`
+  },
+  {
+    key: 2,
+    title: `B.  Document.write("Hello World!")`
+  },
+  {
+    key: 3,
+    title: `C.  Document.write(hello world)`
+  },
+  {
+    key: 4,
+    title: `D.  response.write("hello world") dkfjaklsdfjkl  ;asdjklf klasd `
+  },
+
+]

@@ -4,13 +4,16 @@ import { connect } from 'react-redux';
 import { StatusBar, View } from 'react-native';
 import { MainRoute } from './src/route'
 import { Loader } from './src/utility/Loader';
+import { SnakeBar } from './src/constants/SnakeBar';
 
 
 function App({ appStatus, loading }) {
   console.log(appStatus);
+  console.log(loading);
   return (
     <View style={{ flex: 1 }}>
       <MainRoute appStatus={appStatus} />
+      <SnakeBar />
       <StatusBar
         animated={true}
         backgroundColor="black"
@@ -23,7 +26,7 @@ function App({ appStatus, loading }) {
 const mapStateToProps = (state) => {
   return {
     appStatus: state.app.appStatus,
-    loading: state.app.loading,
+    loading: state.app.loader,
   }
 }
 

@@ -1,6 +1,8 @@
+
 import { AppConstant } from '../constants/AppConstant';
 import { store } from '../store';
 import { setAppLoader } from '../store/actions/AppAction';
+
 
 const timeout = 30000;
 
@@ -26,7 +28,11 @@ export const FormDataAuthApiHeader = {
   'Authorization': `Bearer ${AppConstant.accessToken}`,
 };
 
-export const GetRequest = async ({ url, header = { ...AuthorizeApiHeader, 'Authorization': `Bearer ${AppConstant.accessToken}` }, loader = false }) => {
+export const GetRequest = async ({
+  url,
+  header = { ...AuthorizeApiHeader, 'Authorization': `Bearer ${AppConstant.accessToken}` },
+  loader = true
+}) => {
   const config = {
     method: 'GET',
     headers: header,
@@ -66,7 +72,7 @@ export const PostRequest = async ({
   AppConstant.showConsoleLog('body:', body);
   // return
   try {
-    loader && setAppLoader(true);
+    loader && store.dispatch(setAppLoader(true));
     const controller = new AbortController();
     setTimeout(() => controller.abort(), timeout);
     const config = {
@@ -78,10 +84,10 @@ export const PostRequest = async ({
     AppConstant.showConsoleLog('config:', config);
     const response = await fetch(url, config);
     const result = await response.json();
-    loader && setAppLoader(false);
+    loader && store.dispatch(setAppLoader(false));
     return result;
   } catch (e) {
-    setAppLoader(false);
+    store.dispatch(setAppLoader(false));
     AppConstant.showConsoleLog('error:', e);
     if (e.message == 'Aborted') {
       return false;

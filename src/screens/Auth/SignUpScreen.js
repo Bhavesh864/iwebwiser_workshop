@@ -1,13 +1,15 @@
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { Keyboard, ScrollView, StyleSheet, View } from 'react-native'
 import React, { useRef, useState } from 'react'
 import { width } from '../../styles/CommonStyling'
-import { SignUpSvg } from '../../assets/svg/AppSvg'
+import { CancelEyeSvgComponent, EyeSvgComponent, SignUpSvg } from '../../assets/svg/AppSvg'
 import { AppText } from '../../utility/TextUtility'
 import { InputField, TouchableTextView } from '../../components/Custom/CustomFields'
 import { SpacerVertical } from '../../utility/Spacer'
 import { navigate } from '../../route/RootNavigation'
 import { useDispatch } from 'react-redux'
 import { setAppStatus } from '../../store/actions/AppAction'
+import { SignUpAction } from '../../store/actions/UserAction'
+import { AppToastMessage } from '../../constants/SnakeBar'
 
 const SignUpScreen = () => {
   const dispatch = useDispatch();
@@ -15,9 +17,11 @@ const SignUpScreen = () => {
   const [phone, setphone] = useState('');
   const [email, setemail] = useState('');
   const [password, setpassword] = useState('');
+  const [passwordShow, setpasswordShow] = useState(false);
   const [error, seterror] = useState('');
 
   const onSignupPress = () => {
+    Keyboard.dismiss();
     if (!fullName) {
       seterror('fullname');
       return;
@@ -34,7 +38,26 @@ const SignUpScreen = () => {
       seterror('phone');
       return;
     }
-    dispatch(setAppStatus(2));
+
+    const data = {
+      "name": fullName,
+      "email": email,
+      "phone": phone,
+      "password": password,
+      "type": "student"
+    }
+
+    SignUpAction(data).then(res => {
+      console.log(res);
+      if (res?.status) {
+        navigate('Login');
+        AppToastMessage(res?.message || 'Login Successfully');
+      } else {
+        AppToastMessage(res?.errorMessage || 'Something went wrong!')
+      }
+    }).catch(err => {
+      console.log(res);
+    })
   }
 
 
@@ -73,9 +96,13 @@ const SignUpScreen = () => {
             value={email}
           />
           <InputField
+            onIconPress={() => {
+              setpasswordShow(!passwordShow);
+            }}
+            showIcon={!passwordShow ? <EyeSvgComponent /> : <CancelEyeSvgComponent />}
             error={error == 'password' ? 'Please enter a valid password!' : null}
             placeholder='Password'
-            secureTextEntry={true}
+            secureTextEntry={!passwordShow}
             onTextChange={(text) => {
               if (error == 'password') {
                 seterror(null)
